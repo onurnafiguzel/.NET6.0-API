@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NLayer.Caching
+namespace NLayer.Core.Dtos
 {
-    internal class Class1
+    public class ProductWithCategoryDto : ProductDto
     {
-        //Test
+        public CategoryDto Category { get; set; }
     }
 }
