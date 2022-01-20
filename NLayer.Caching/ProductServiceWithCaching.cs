@@ -7,24 +7,19 @@ using NLayer.Core.Repositories;
 using NLayer.Core.Services;
 using NLayer.Core.UnitOfWorks;
 using NLayer.Service.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NLayer.Caching
 {
-    internal class ProductServiceWithCaching : IProductService
+    public class ProductServiceWithCaching : IProductService
     {
         private const string CacheProductKey = "productsCache";
         private readonly IMapper _mapper;
-        private readonly MemoryCache _memoryCache;
+        private readonly IMemoryCache _memoryCache;
         private readonly IProductRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public ProductServiceWithCaching(IUnitOfWork unitOfWork, IProductRepository repository, MemoryCache memoryCache, IMapper mapper)
+        public ProductServiceWithCaching(IUnitOfWork unitOfWork, IProductRepository repository, IMemoryCache memoryCache, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _repository = repository;
@@ -33,7 +28,7 @@ namespace NLayer.Caching
 
             if (!memoryCache.TryGetValue(CacheProductKey, out _))
             {
-                _memoryCache.Set(CacheProductKey, _repository.GetProductsWithCategory());
+                _memoryCache.Set(CacheProductKey, _repository.GetProductsWithCategory().Result);
             }
         }
 
@@ -60,7 +55,8 @@ namespace NLayer.Caching
 
         public Task<IEnumerable<Product>> GetAllAsync()
         {
-            return Task.FromResult(_memoryCache.Get<IEnumerable<Product>>(CacheProductKey));
+            var products = _memoryCache.Get<IEnumerable<Product>>(CacheProductKey);
+            return Task.FromResult(products);
         }
 
         public Task<Product> GetByIdAsync(int id)
